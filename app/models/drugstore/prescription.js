@@ -1,10 +1,10 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const Int32 = require('mongoose-int32');
+const Int32 = require('mongoose-int32').loadType(mongoose);
 const prescriptionSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    userId: mongoose.Schema.Types.ObjectId,
+    healthbookId: mongoose.Schema.Types.ObjectId,
     drugstoreId: mongoose.Schema.Types.ObjectId,
     medicine_list: Array, //list medicine ID
     medicine_price: Number,

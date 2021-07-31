@@ -11,7 +11,10 @@ const clinicSchema = mongoose.Schema({
     address: String,
     albums: Array,
     phone: String,
-    services: Array,
+    services: {
+        type: Array,
+        default: [],
+    },
     active_time: Object,
     is_active: {
         type: Number,

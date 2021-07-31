@@ -1,7 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const Int32 = require('mongoose-int32');
+const Int32 = require('mongoose-int32').loadType(mongoose);
 const medicineExportSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     medicineId: mongoose.Schema.Types.ObjectId,

@@ -7,11 +7,11 @@ async function searchResults(keyword) {
 
 // [GET] /
 exports.index = async function(req, res, next) {
-    let logged_user_id =  await authMiddleware(req, res, next, false);
+    // let logged_user_id =  await authMiddleware(req, res, next, false);
 
-    if(logged_user_id === null || typeof logged_user_id !== 'string') {
-        logged_user_id = null;
-    }
+    // if(logged_user_id === null || typeof logged_user_id !== 'string') {
+    //     logged_user_id = null;
+    // }
 
     res.send('Home page');
 }

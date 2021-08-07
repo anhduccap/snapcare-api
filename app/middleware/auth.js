@@ -1,16 +1,23 @@
-const UserSchema = require('../models/user/user');
+const jwt = require('jsonwebtoken');
+const helper = require('../controllers/helper/index');
 
-module.exports = async (req, res, next, is_require_login) => {
-    if(is_require_login === undefined) is_require_login = true;
-    if(is_require_login) {
-        return res.status(403).send('Authentication failed');
+exports.verifyToken = async function(req, res, next) {
+    const token = req.header('auth-token');
+
+    if(!token) {
+        return res
+            .status(403)
+            .send( helper.responseFailure(false, '403', 'Access denied') );
     }
 
-    let user = UserSchema.findOne({
-        //test
-    }, (err) => {throw err;});
+    try {
+        const verified = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+        req.userId = verified.id;
+        return next();
 
-    if(user !== null) return user._id;
-
-    return null;
+    } catch (err) {
+        return res
+            .status(403)
+            .send( helper.responseFailure(false, '403', 'Invalid token') );
+    }
 }

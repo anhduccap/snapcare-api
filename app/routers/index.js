@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const app = express();
 const router = express.Router();
 
 const home = require('./home');
@@ -18,15 +19,16 @@ app.use('/drugstore', drugstore);
 app.use('/healthbook', healthbook);
 
 // catch 404 and forward to error handler
-router.use(function(req, res) {
-    res.status(404).send(helper.responseError( helper.httpsCode().NOT_FOUND, {url: req.originalUrl + ' not found'},'Page not found'))
-});
+// router.use(function(req, res) {
+//     // res.status(404).send(helper.responseError( helper.httpsCode().NOT_FOUND, {url: req.originalUrl + ' not found'},'Page not found'))
+//     res.status(404).send('Errors');
+// });
 
 // Error handle
-router.use(function(err, req, res, next) {
-    const _status = err.status || 500;
-    res.status(_status);
-    res.render('error', helper.responseError(helper.httpsCode().INTERNAL_SERVER_ERROR,err.message));
-});
+// router.use(function(err, req, res, next) {
+//     const _status = err.status || 500;
+//     res.status(_status);
+//     res.render('error', helper.responseError(helper.httpsCode().INTERNAL_SERVER_ERROR,err.message));
+// });
 
 module.exports = router;

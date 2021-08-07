@@ -3,18 +3,27 @@
 const mongoose = require('mongoose');
 const Int32 = require('mongoose-int32').loadType(mongoose);
 const userSchema = mongoose.Schema({
-    _id: mongoose.Schema.Types.ObjectId,
-    healthbook: Array,
+    // _id: mongoose.Schema.Types.ObjectId,
     phone: String,
     password: {
         type: String,
-        minLength: 8,
-        maxLength: 16,
+        minLength: 5,
     },
     fullname: String,
-    district: Int32,
-    date_created: Number,
-}, {_id: false, collection: 'User', minimize: false});
+    district: String,
+    date_created: {
+        type: Number,
+        default: Date.now(),
+    },
+    healthbook: {
+        type: Array,
+        default: [],
+    },
+}, {
+    // _id: false,
+    collection: 'User', 
+    minimize: false
+});
 
 const User = mongoose.model('User', userSchema);
 

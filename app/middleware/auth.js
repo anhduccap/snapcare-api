@@ -12,7 +12,7 @@ exports.verifyToken = async function(req, res, next) {
 
     try {
         const verified = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
-        req.userId = verified.id;
+        req.userId = verified.data.userId;
         return next();
 
     } catch (err) {

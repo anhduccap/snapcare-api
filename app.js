@@ -3,17 +3,9 @@ const app = express();
 require('dotenv').config();
 const logger = require('morgan');
 const helmet = require('helmet');
-const expressValidator = require('express-validator');
-// const server = require('http').createServer(app);
-// const expressInit = require('./express');
+const CORS = require('cors');
 
-// const indexRouter = require('./app/routers/index');
-const home = require('./app/routers/home');
-const auth = require('./app/routers/auth');
-const nurse = require('./app/routers/nurse');
-const clinic = require('./app/routers/clinic');
-const drugstore = require('./app/routers/drugstore');
-const healthbook = require('./app/routers/healthbook');
+const routers = require('./app/routers/index');
 
 app.use(logger('dev'));
 app.use(helmet());
@@ -22,41 +14,22 @@ app.use(express.urlencoded({ extended: true }));
 const mongoose = require('mongoose');
 mongoose.connect(
     process.env.MONGODB,
-    {useNewUrlParser: true, useUnifiedTopology: true},
+    {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false},
     (err) => {
         if(err) throw err;
         console.log('Connecting to mongoose successfully');
     }
 );
 
-// app.use('/', indexRouter);
-app.use('/', home);
-app.use('/auth', auth);
-app.use('/nurse', nurse);
-app.use('/clinic', clinic);
-app.use('/drugstore', drugstore);
-app.use('/healthbook', healthbook);
+app.use(CORS({
+    origin: '*',
+    methods: 'GET, POST, PUT, DELETE',
+    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, x-token, Lang, Client',
+    credentials: true,
+}));
 
-// catch 404 and forward to error handler
-app.use(function(req, res) {
-    // res.status(404).send(helper.responseError( helper.httpsCode().NOT_FOUND, {url: req.originalUrl + ' not found'},'Page not found'))
-    res.status(404).send('Errors');
-});
-
-// error handler
-// app.use(function(err, req, res, next) {
-//     // set locals, only providing error in development
-//     res.locals.message = err.message;
-//     res.locals.error = req.app.get('env') === 'development' ? err : {};
-  
-//     // render the error page
-//     res.status(err.status || 500);
-//     res.render('error');
-// });
+app.use('/', routers);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
 });
-
-// expressInit.init(app);
-// module.exports = app;

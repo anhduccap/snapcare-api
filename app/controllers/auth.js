@@ -43,7 +43,7 @@ exports.login = async function (req, res, next) {
                         data: {
                             userId: user._id,
                         },
-                        exp: Math.floor(Date.now() / 1000) + (15 * 60),
+                        exp: Math.floor(Date.now() / 1000) + (60 * 60),
                     }, process.env.TOKEN_SECRET_KEY);
     
                     //update last login time

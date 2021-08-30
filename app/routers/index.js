@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 
-const helper = require('../controllers/helper/index');
+const helper = require('../helper/index');
 
 const home = require('./home');
 const auth = require('./auth');

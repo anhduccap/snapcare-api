@@ -1,20 +1,16 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const Int32 = require('mongoose-int32').loadType(mongoose);
 const nurseVotingSchema = mongoose.Schema({
-    healthbook: {
+    // _id: mongoose.Schema.Types.ObjectId,
+    healthbookId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Healthbook',
     },
-    nurse: {
+    nurseId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Nurse',
     },
-
-    content: String,
-    score: Int32,
-
     date_created: {
         type: Number,
         default: Date.now(),
@@ -23,6 +19,12 @@ const nurseVotingSchema = mongoose.Schema({
         type: Number,
         default: null,
     },
-});
+    status: Boolean, //true: saved  -  false: none
+}, {
+    // _id: false, 
+    collection: 'Healthbook_save_nurse', 
+    minimize: false});
 
-module.exports = mongoose.model('Nurse_voting', nurseVotingSchema);
+const Healthbook_save_nurse = mongoose.model('Healthbook_save_nurse', nurseVotingSchema);
+
+module.exports = Healthbook_save_nurse;

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const helper = require('../controllers/helper/index');
+const helper = require('../helper/index');
 
 exports.verifyToken = async function(req, res, next) {
     const token = req.header('auth-token');
@@ -20,4 +20,17 @@ exports.verifyToken = async function(req, res, next) {
             .status(403)
             .send( helper.responseFailure(false, '403', 'Invalid token') );
     }
+}
+
+exports.verifyHealthbook = async function (req, res, next) {
+    const healthbookId = req.header('healthbook-id');
+
+    if(!healthbookId) {
+        return res
+            .status(403)
+            .send( helper.responseFailure(false, '403', 'Invalid health book! Please try to choose another health book') );
+    }
+
+    req.healthbookId = healthbookId;
+    return next();
 }

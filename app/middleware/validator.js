@@ -85,8 +85,8 @@ exports.updateSymptomValidator = [
         .not().isEmpty().trim().escape().withMessage('Invalid text'),
 ];
 
-exports.commentValidator = [
-    body('symptom')
+exports.votingValidator = [
+    body('comment')
         .isLength({ max: 8000 }).withMessage('Limit length')
         .not().isEmpty().trim().escape().withMessage('Invalid text'),
 ]

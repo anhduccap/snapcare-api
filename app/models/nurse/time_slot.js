@@ -25,6 +25,10 @@ const TimeSlotSchema = mongoose.Schema({
         type: Object,
         default: null,
     },
+    voting_data: {
+        type: Object,
+        default: null, 
+    },
 }, {
     collection: 'Time_slot',
     minimize: false,

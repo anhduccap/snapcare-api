@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator');
 
 const HealthbookSchema = require('../models/healthbook/healthbook');
 const HealthbookSaveNurseSchema = require('../models/healthbook/healthbook_save_nurse');
-const TimeSlotSchema = require('../models/other/time_slot');
+const TimeSlotSchema = require('../models/nurse/time_slot');
 const ShiftSchema = require('../models/other/shift');
 const NurseSchema = require('../models/nurse/nurse');
 const helper = require('../helper/index');
@@ -571,46 +571,93 @@ exports.nurseBooking = async function (req, res, next) {
 }
 
 exports.cancelBooking = async function (req, res, next) {
-    const record = await TimeSlotSchema.findOne(
-        {
-            _id: req.params.time_slot_id,
-            is_booked: true,
-            healthbook: req.params.id,
-        }
-    );
+    const record = await TimeSlotSchema.findOne({_id: req.params.time_slot_id});
 
     if(!record) {
         return res.status(500)
             .send( helper.responseFailure(false, '400', 'The record was not booked'));
     }
 
-    TimeSlotSchema.findOneAndUpdate(
-        {
-            _id: req.params.time_slot_id,
-            is_booked: true,
-            healthbook: req.params.id,
-        },
-        {
-            is_booked: false,
-            healthbook: null,
-            booking_date: null,
-        }
-    ).then( response => {
-        return res.status(200).send( helper.responseSuccess(true, '200', 'The record was canceled successfully', response._id));
-    })
-    .catch( error => {
+    if(record.booking_data.process === 1) {
+        TimeSlotSchema.findOneAndUpdate(
+            {
+                _id: req.params.time_slot_id,
+                is_booked: true,
+                healthbook: req.params.id,
+            },
+            {
+                is_booked: false,
+                healthbook: null,
+                booking_data: null,
+                voting_data: null,
+            }
+        ).then( response => {
+            return res.status(200).send( helper.responseSuccess(true, '200', 'The record was canceled successfully', response._id));
+        })
+        .catch( error => {
+            return res.status(500)
+                .send( helper.responseFailure(false, '500', 'Failed to delete record', error));
+        });
+    }
+    else {
         return res.status(500)
-            .send( helper.responseFailure(false, '500', 'Failed to delete record', error));
-    });
+            .send( helper.responseFailure(false, '500', 'You cannot cancel this booking'));
+    }
 }
 
-exports.comment = async function (req, res, next) {
-    // const errors = validationResult(req);
-    // if(!errors.isEmpty()){
-    //     return res.status(400)
-    //         .send( helper.responseFailure(false, '400', 'Invalid input', errors.array()) );
-    // }
-    // else {
+exports.nurseVoting = async function (req, res, next) {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(400)
+            .send( helper.responseFailure(false, '400', 'Invalid input', errors.array()) );
+    }
+    else {
+        const record = await TimeSlotSchema.findOne({_id: req.params.time_slot_id});
+
+        if(!record) {
+            return res.status(500)
+                .send( helper.responseFailure(false, '400', 'The record was not booked'));
+        }
+
+        req.body.score = parseInt(req.body.score, 10);
+
+        let votingObject = {
+            date_created: Date.now(),
+            comment: req.body.comment,
+            score: req.body.score,
+        };
+
+        let votingUpdate = await TimeSlotSchema.findOneAndUpdate(
+            {
+                _id: req.params.time_slot_id,
+            },
+            {
+                voting_data: votingObject,
+            }
+        );
         
-    // }
+        //update nurse's average_score
+        let recordList = await TimeSlotSchema.find({nurse: record.nurse});
+
+        let sumScore = await recordList.reduce( (accumulator, record) => {
+            if(record.voting_data !== null) {
+                return accumulator + record.voting_data.score;
+            }
+            else{
+                return accumulator;
+            }
+        }, 0);
+
+        let recordListHasVote = await recordList.filter( record => record.voting_data !== null);
+        let average_score = sumScore / (recordListHasVote.length);
+        average_score = Math.round(average_score);
+
+        let averageScoreUpdate = await NurseSchema.findOneAndUpdate({_id: record.nurse}, {average_score: average_score});
+
+        if(!votingUpdate || !averageScoreUpdate) {
+            return res.status(500)
+                .send( helper.responseFailure(false, '500', 'Failed to comment'));
+        }
+        return res.status(200).send( helper.responseSuccess(true, '200', 'Comment successfully'));
+    }
 }

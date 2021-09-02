@@ -21,6 +21,6 @@ router.put('/:id/symptom', auth.verifyToken, validator.updateSymptomValidator, h
 router.post('/:id/save_nurse/:nurseId', auth.verifyToken, healthbookController.saveNurse);
 router.post('/:id/book/:nurseId', auth.verifyToken, validator.bookingValidator, healthbookController.nurseBooking);
 router.delete('/:id/book/:time_slot_id', auth.verifyToken, healthbookController.cancelBooking);
-// router.post('/:id/comment/:nurseId', auth.verifyToken, validator.commentValidator, healthbookController.comment);
+router.post('/:id/voting/:time_slot_id', auth.verifyToken, validator.votingValidator, healthbookController.nurseVoting);
 
 module.exports = router;

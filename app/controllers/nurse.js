@@ -54,6 +54,10 @@ exports.createNurse = async function (req, res, next) {
 
 exports.getNurse = async function(req, res, next) {
     let nurseList = await NurseSchema.find({is_active: true});
+    req.query.average_score = Math.floor(req.query.average_score);
+    if(req.query.average_score >= 0) {
+        nurseList = nurseList.filter( nurse => nurse.average_score >= req.query.average_score);
+    }
     let savedList = await HealthbookSaveNurseSchema.find({healthbookId: req.healthbookId});
     let timeList = await TimeSchema.find({});
 

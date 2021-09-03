@@ -9,6 +9,7 @@ const CountrySchema = require('../models/user/address/country');
 const ProvinceSchema = require('../models/user/address/province');
 const DistrictSchema = require('../models/user/address/district');
 const WardSchema = require('../models/user/address/ward');
+const SearchSchema = require('../models/user/user_searching');
 
 // [GET] /
 exports.index = async function(req, res, next) {
@@ -19,6 +20,31 @@ exports.index = async function(req, res, next) {
     // }
 
     res.send('Home page');
+}
+
+//[gET] /search/history
+exports.searchingHistory = async function(req, res, next){
+    let searchList = await SearchSchema.find({user: req.userId}).sort({ 'date_created': 'desc' }).limit(5);
+
+    Promise.all(
+        searchList.map( search => {
+            search.keyword = unescape(search.keyword);
+            return search;
+        })
+    ).then( searchList => {
+        let data = [];
+        if(!searchList || searchList.length === 0) {
+            data = [];
+        }
+        else {
+            data = searchList;
+        }
+        return res.status(200)
+            .send( helper.responseSuccess(true, '200', 'OK', data) );
+    }).catch( error => {
+        return res.status(500) 
+            .send( helper.responseFailure(false, '500', 'Error', error) );
+    })
 }
 
 // [GET] /search/:keyword
@@ -68,28 +94,10 @@ exports.suggestKeyword = async function (req, res, next) {
 }
 
 exports.getAddress = async function (req, res, next) {
-    let countryList = await CountrySchema.find({});
-    let provinceList = await ProvinceSchema.find({});
-    let districtList = await DistrictSchema.find({});
-    let wardList = await WardSchema.find({});
-
-    countryList.forEach((country) => {
-        let matchProvinceList = provinceList.filter((province, index) => {
-            return province.countryCode === country.code;
-        });
-        country.provinces = matchProvinceList;
-        country.provinces.forEach((province) => {
-            let matchDistrictList = districtList.filter((district, index) => {
-                return district.provinceCode === province.code;
-            });
-            province.districts = matchDistrictList;
-            province.districts.forEach((district) => {
-                let matchWardList = wardList.filter((ward, index) => {
-                    return ward.districtCode === district.code;
-                });
-                district.wards = matchWardList;
-            })
-        });
-    });
-    return countryList;
+    let provinceList = await ProvinceSchema.find({}).populate({
+        path: 'country',
+    }).exec();
+    
+    return res.status(200)
+        .send( helper.responseSuccess(true, '200', 'OK', provinceList))
 }

@@ -7,6 +7,7 @@ const DateSchema = require('../models/other/date');
 const TimeSchema = require('../models/other/time');
 const ShiftSchema = require('../models/other/shift');
 const TimeSlotSchema = require('../models/nurse/time_slot');
+const SearchingSchema = require('../models/user/user_searching');
 
 const helper = require('../helper/index');
 
@@ -54,10 +55,35 @@ exports.createNurse = async function (req, res, next) {
 
 exports.getNurse = async function(req, res, next) {
     let nurseList = await NurseSchema.find({is_active: true});
-    req.query.average_score = Math.floor(req.query.average_score);
-    if(req.query.average_score >= 0) {
+
+    //filter with average_score
+    if(req.query.average_score >= 0 && req.query.average_score !== undefined) {
+        req.query.average_score = Math.floor(req.query.average_score);
+
         nurseList = nurseList.filter( nurse => nurse.average_score >= req.query.average_score);
     }
+
+    //search
+    //FE: space ----(convert)-->  '+'  &&  dont escape special symbol --> pass to url
+    if( (req.body.search_keyword !== undefined && req.body.search_keyword !== '') && (req.query.search !== undefined && req.query.search !== '') ) {
+        req.body.search_keyword = escape(req.body.search_keyword).trim();
+        const updateSearchKeyword = new SearchingSchema({ 
+            keyword: req.body.search_keyword, 
+            user: req.userId, 
+            date_created: new Date().getTime(),
+        });
+        updateSearchKeyword.save();
+
+        req.query.search = helper.removeVietnameseTones(req.query.search);
+
+        let pattern = new RegExp(req.query.search, 'i');
+            
+        nurseList = nurseList.filter( nurse => {
+            let withoutTonesText = helper.removeVietnameseTones(nurse.fullname);
+            if(withoutTonesText.match(pattern) !== null) return nurse;
+        });
+    }
+
     let savedList = await HealthbookSaveNurseSchema.find({healthbookId: req.healthbookId});
     let timeList = await TimeSchema.find({});
 

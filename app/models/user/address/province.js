@@ -4,6 +4,10 @@ const mongoose = require('mongoose');
 const provinceSchema = mongoose.Schema({
     // _id: mongoose.Schema.Types.ObjectId,
     country_code: String,
+    country: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address_Country',
+    },
     code: String,
     name: String,
 }, {
